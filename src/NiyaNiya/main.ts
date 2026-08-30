@@ -3,6 +3,7 @@
 import {
   BasicRateLimiter,
   ContentRating,
+  CookieStorageInterceptor,
   type Chapter,
   type ChapterDetails,
   type Cookie,
@@ -43,15 +44,10 @@ import {
   SITE_URL,
   SORT_OPTIONS,
 } from "./models";
-import { MainInterceptor } from "./network";
+import { MainInterceptor, niyaCloudflareError } from "./network";
 import type NiyaNiyaConfig from "./pbconfig";
 
 const BRACKETS_REGEX = /(\[[^\]]*\]|[({][^)}]*[)}])/g;
-
-const CLEARANCE_HELP =
-  "Reading needs a clearance token. The site's Cloudflare check does not work " +
-  "inside the app, so paste one from a browser: open niyaniya.moe, then use the " +
-  "bookmarklet in NiyaNiya settings to copy the token and paste it there.";
 
 // Fallback order for each requested resolution, mirroring the website.
 const QUALITY_FALLBACKS: Record<string, string[]> = {
@@ -71,7 +67,12 @@ export class NiyaNiyaExtension implements ExtensionImpl<typeof NiyaNiyaConfig> {
 
   mainInterceptor = new MainInterceptor("main");
 
+  // Persists Cloudflare cookies collected by the bypass webview, exactly like
+  // the Madara/ToonGod base does.
+  cookieStorageInterceptor = new CookieStorageInterceptor({ storage: "stateManager" });
+
   async initialise(): Promise<void> {
+    this.cookieStorageInterceptor.registerInterceptor();
     this.mainRateLimiter.registerInterceptor();
     this.mainInterceptor.registerInterceptor();
   }
@@ -263,11 +264,11 @@ export class NiyaNiyaExtension implements ExtensionImpl<typeof NiyaNiyaConfig> {
   async getChapterDetails(chapter: Chapter): Promise<ChapterDetails> {
     const mangaId = chapter.sourceManga.mangaId;
 
-    // Reading pages needs a clearance token. The site's Cloudflare Turnstile
-    // refuses to run inside an in-app webview, so the token must be pasted from
-    // a real browser (see the extension settings for one-tap instructions).
+    // Reading pages needs a clearance token. Trigger the in-app bypass webview
+    // (which mints one when it is allowed to run); if that keeps failing the
+    // user can paste a token from a real browser via settings.
     if (getClearance() === undefined) {
-      throw new Error(CLEARANCE_HELP);
+      throw niyaCloudflareError();
     }
 
     const crt = encodeURIComponent(getClearance()!);
@@ -316,13 +317,19 @@ export class NiyaNiyaExtension implements ExtensionImpl<typeof NiyaNiyaConfig> {
 
   // ----- Cloudflare bypass -----
 
+  // Deprecated path: older app builds only hand back cookies (no localStorage).
+  async saveCloudflareBypassCookies(cookies: Cookie[]): Promise<void> {
+    this.storeCloudflareCookies(cookies);
+  }
+
   async cloudflareBypassCompleted(
     request: Request,
     cookies: Cookie[],
     localStorage: Record<string, string>,
   ): Promise<void> {
     void request;
-    void cookies;
+
+    this.storeCloudflareCookies(cookies);
 
     // The token is normally stored under the "clearance" key, but fall back to
     // any key that looks like it in case the site renames it.
@@ -337,6 +344,14 @@ export class NiyaNiyaExtension implements ExtensionImpl<typeof NiyaNiyaConfig> {
     }
     if (token && token.length > 0) {
       setClearance(token.replace(/^"|"$/g, ""));
+    }
+  }
+
+  private storeCloudflareCookies(cookies: Cookie[]): void {
+    for (const cookie of cookies) {
+      if (/^_{0,2}cf/i.test(cookie.name)) {
+        this.cookieStorageInterceptor.setCookie(cookie);
+      }
     }
   }
 
