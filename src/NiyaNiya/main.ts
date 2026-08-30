@@ -195,7 +195,10 @@ export class NiyaNiyaExtension implements ExtensionImpl<typeof NiyaNiyaConfig> {
       if (!names || names.length === 0) {
         continue;
       }
-      const tags: Tag[] = names.map((name) => ({ id: `${ns}:${name}`, title: name }));
+      const tags: Tag[] = names.map((name) => ({
+        id: `${ns}:${this.sanitizeId(name)}`,
+        title: name,
+      }));
       tagGroups.push({ id: ns, title, tags });
     }
 
@@ -337,6 +340,12 @@ export class NiyaNiyaExtension implements ExtensionImpl<typeof NiyaNiyaConfig> {
 
   private mangaId(entry: BookEntry): string {
     return `${entry.id}/${entry.key}`;
+  }
+
+  // Tag IDs may only contain alphanumerics or ._-@()[]%?#+=/&: — replace the
+  // rest (notably spaces) so multi-word tag names are accepted by the app.
+  private sanitizeId(value: string): string {
+    return value.replace(/[^A-Za-z0-9._\-@()[\]%?#+=/&:]/g, "_");
   }
 
   private cleanTitle(title: string): string {
