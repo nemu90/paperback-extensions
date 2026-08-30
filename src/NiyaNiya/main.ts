@@ -2,7 +2,6 @@
 
 import {
   BasicRateLimiter,
-  CloudflareError,
   ContentRating,
   type Chapter,
   type ChapterDetails,
@@ -36,7 +35,6 @@ import {
   type BooksResponse,
   CATEGORY_OPTIONS,
   DEFAULT_QUALITY,
-  DESKTOP_USER_AGENT,
   type ImagesInfo,
   type MangaData,
   type MangaDetailResponse,
@@ -49,6 +47,11 @@ import { MainInterceptor } from "./network";
 import type NiyaNiyaConfig from "./pbconfig";
 
 const BRACKETS_REGEX = /(\[[^\]]*\]|[({][^)}]*[)}])/g;
+
+const CLEARANCE_HELP =
+  "Reading needs a clearance token. The site's Cloudflare check does not work " +
+  "inside the app, so paste one from a browser: open niyaniya.moe, then use the " +
+  "bookmarklet in NiyaNiya settings to copy the token and paste it there.";
 
 // Fallback order for each requested resolution, mirroring the website.
 const QUALITY_FALLBACKS: Record<string, string[]> = {
@@ -260,10 +263,11 @@ export class NiyaNiyaExtension implements ExtensionImpl<typeof NiyaNiyaConfig> {
   async getChapterDetails(chapter: Chapter): Promise<ChapterDetails> {
     const mangaId = chapter.sourceManga.mangaId;
 
-    // Reading pages needs a clearance token. If we don't have one, ask the app
-    // to run the Cloudflare check before wasting a request.
+    // Reading pages needs a clearance token. The site's Cloudflare Turnstile
+    // refuses to run inside an in-app webview, so the token must be pasted from
+    // a real browser (see the extension settings for one-tap instructions).
     if (getClearance() === undefined) {
-      throw this.cloudflareError();
+      throw new Error(CLEARANCE_HELP);
     }
 
     const crt = encodeURIComponent(getClearance()!);
@@ -337,20 +341,6 @@ export class NiyaNiyaExtension implements ExtensionImpl<typeof NiyaNiyaConfig> {
   }
 
   // ----- Helpers -----
-
-  private cloudflareError(): CloudflareError {
-    return new CloudflareError(
-      {
-        url: `${SITE_URL}/`,
-        method: "GET",
-        headers: {
-          Referer: `${SITE_URL}/`,
-          "User-Agent": DESKTOP_USER_AGENT,
-        },
-      },
-      "Complete the check, wait for the page to fully load, then reopen the chapter.",
-    );
-  }
 
   private mangaId(entry: BookEntry): string {
     return `${entry.id}/${entry.key}`;

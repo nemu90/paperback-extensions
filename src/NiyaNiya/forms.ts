@@ -115,10 +115,13 @@ export class SettingsForm extends Form {
           id: "clearance",
           header: "Cloudflare clearance",
           footer:
-            "Reading pages needs a clearance token from a Cloudflare check. The app grabs it " +
-            "automatically the first time you open a chapter. If that fails you can paste one " +
-            "manually: open niyaniya.moe in a browser, run localStorage.getItem('clearance') in " +
-            "the dev console, and paste the value (without quotes) here.",
+            "Reading pages needs a clearance token. The site's check does not work inside the " +
+            "app, so get the token from any normal browser:\n" +
+            "1. Open https://niyaniya.moe and let it fully load.\n" +
+            "2. In the address bar, paste and run this bookmarklet:\n" +
+            "   javascript:prompt('token', localStorage.getItem('clearance'))\n" +
+            "3. Copy the value it shows and paste it below, then Save.\n" +
+            "Tokens expire after a while; repeat when reading stops working.",
         },
         [
           LabelRow("clearanceStatus", {

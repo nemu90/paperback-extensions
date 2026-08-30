@@ -1,11 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-import {
-  CloudflareError,
-  PaperbackInterceptor,
-  type Request,
-  type Response,
-} from "@paperback/types";
+import { PaperbackInterceptor, type Request, type Response } from "@paperback/types";
 
 import { setClearance } from "./forms";
 import { DESKTOP_USER_AGENT, SITE_URL } from "./models";
@@ -41,19 +36,12 @@ export class MainInterceptor extends PaperbackInterceptor {
     data: ArrayBuffer,
   ): Promise<ArrayBuffer> {
     // A gated request that comes back 400/403 means the clearance token is
-    // missing or expired. Drop it and ask the app to run the Cloudflare check.
+    // missing or expired. Drop it and tell the user to refresh it from settings.
     if (isClearanceGated(request) && (response.status === 400 || response.status === 403)) {
       setClearance(undefined);
-      throw new CloudflareError(
-        {
-          url: `${SITE_URL}/`,
-          method: "GET",
-          headers: {
-            Referer: `${SITE_URL}/`,
-            "User-Agent": DESKTOP_USER_AGENT,
-          },
-        },
-        "Complete the check, wait for the page to fully load, then reopen the chapter.",
+      throw new Error(
+        "Clearance token missing or expired. Open niyaniya.moe in a browser, then use the " +
+          "bookmarklet in NiyaNiya settings to copy a fresh token and paste it there.",
       );
     }
     return data;
