@@ -1,0 +1,22 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.cache/.tsbuildinfo",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "target": "esnext",
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
+  },
+  "exclude": ["./src/tests"]
+}
