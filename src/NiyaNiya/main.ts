@@ -36,6 +36,7 @@ import {
   type BooksResponse,
   CATEGORY_OPTIONS,
   DEFAULT_QUALITY,
+  DESKTOP_USER_AGENT,
   type ImagesInfo,
   type MangaData,
   type MangaDetailResponse,
@@ -319,7 +320,17 @@ export class NiyaNiyaExtension implements ExtensionImpl<typeof NiyaNiyaConfig> {
     void request;
     void cookies;
 
-    const token = localStorage["clearance"];
+    // The token is normally stored under the "clearance" key, but fall back to
+    // any key that looks like it in case the site renames it.
+    let token = localStorage["clearance"];
+    if (!token) {
+      for (const [k, v] of Object.entries(localStorage)) {
+        if (/clearance/i.test(k) && v) {
+          token = v;
+          break;
+        }
+      }
+    }
     if (token && token.length > 0) {
       setClearance(token.replace(/^"|"$/g, ""));
     }
@@ -332,9 +343,12 @@ export class NiyaNiyaExtension implements ExtensionImpl<typeof NiyaNiyaConfig> {
       {
         url: `${SITE_URL}/`,
         method: "GET",
-        headers: { Referer: `${SITE_URL}/` },
+        headers: {
+          Referer: `${SITE_URL}/`,
+          "User-Agent": DESKTOP_USER_AGENT,
+        },
       },
-      "Cloudflare check required to read pages. Complete it and reopen the chapter.",
+      "Complete the check, wait for the page to fully load, then reopen the chapter.",
     );
   }
 

@@ -8,6 +8,12 @@ export const API_URL = "https://api.schale.network";
 export const SITE_URL = "https://niyaniya.moe";
 export const BOOKS_URL = `${API_URL}/books`;
 
+// The site skips rendering its Cloudflare Turnstile (and therefore never mints
+// a clearance token) when navigator.userAgent contains "webview"/"wv". Present
+// a desktop Chrome UA everywhere so the Turnstile appears in the bypass webview.
+export const DESKTOP_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
 // Secure-state key under which the clearance (crt) token is stored.
 export const CLEARANCE_STATE_KEY = "clearance";
 

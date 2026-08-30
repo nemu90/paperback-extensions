@@ -8,7 +8,7 @@ import {
 } from "@paperback/types";
 
 import { setClearance } from "./forms";
-import { SITE_URL } from "./models";
+import { DESKTOP_USER_AGENT, SITE_URL } from "./models";
 
 // Requests to these API paths are gated behind a Cloudflare clearance token.
 // Everything else on the API (browse, search, details, tags) is open.
@@ -30,7 +30,7 @@ export class MainInterceptor extends PaperbackInterceptor {
       ...request.headers,
       Referer: `${SITE_URL}/`,
       Origin: SITE_URL,
-      "User-Agent": await Application.getDefaultUserAgent(),
+      "User-Agent": DESKTOP_USER_AGENT,
     };
     return request;
   }
@@ -50,10 +50,10 @@ export class MainInterceptor extends PaperbackInterceptor {
           method: "GET",
           headers: {
             Referer: `${SITE_URL}/`,
-            "User-Agent": await Application.getDefaultUserAgent(),
+            "User-Agent": DESKTOP_USER_AGENT,
           },
         },
-        "Cloudflare check required to read pages. Complete it and reopen the chapter.",
+        "Complete the check, wait for the page to fully load, then reopen the chapter.",
       );
     }
     return data;

@@ -6,7 +6,7 @@ export default {
   name: "NiyaNiya",
   description:
     "Extension for niyaniya.moe (Schale Network / Koharu). Reading pages requires a one-time Cloudflare check.",
-  version: "1.0.1",
+  version: "1.0.2",
   icon: "icon.png",
   language: "en",
   contentRating: ContentRating.ADULT,
