@@ -3,9 +3,9 @@
 Self-hosted [Paperback 0.9](https://paperback.moe) content extensions for the
 Schale Network family of sites.
 
-| Extension | Site | Content rating |
-|-----------|------|----------------|
-| NiyaNiya  | https://niyaniya.moe | 18+ |
+| Extension | Site                 | Content rating |
+| --------- | -------------------- | -------------- |
+| NiyaNiya  | https://niyaniya.moe | 18+            |
 
 > Adult sources only appear in Paperback when adult content is enabled in the
 > app settings.
