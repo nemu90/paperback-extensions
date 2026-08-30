@@ -1,7 +1,7 @@
 {
-  "name": "niyaniya-extensions",
+  "name": "paperback-extensions",
   "private": true,
-  "description": "Paperback 0.9 extension for niyaniya.moe (Schale Network).",
+  "description": "Self-hosted Paperback 0.9 content extensions.",
   "type": "module",
   "scripts": {
     "tsc": "tsc",
